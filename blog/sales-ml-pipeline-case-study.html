@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Study: Building a Scalable ML Pipeline That Scores Hundreds of Sales Calls Daily — neuralrust.network</title>
+  <meta name="description" content="How we built a production ML pipeline on AWS that processes and scores hundreds of sales calls daily, and how LLMs and fine-tuned retrieval are changing the game.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 160px 24px 80px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    .article-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .article h1 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+    .article-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-light);
+      margin-bottom: 48px;
+      line-height: 1.7;
+    }
+    .article h2 {
+      font-size: 1.6rem;
+      margin-top: 48px;
+      margin-bottom: 16px;
+    }
+    .article h3 {
+      font-size: 1.25rem;
+      margin-top: 36px;
+      margin-bottom: 12px;
+    }
+    .article p {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      margin-bottom: 20px;
+    }
+    .article img {
+      width: 100%;
+      border-radius: 8px;
+      margin: 32px 0;
+      border: 1px solid var(--border);
+    }
+    .article figcaption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-top: -20px;
+      margin-bottom: 32px;
+    }
+    .article ul, .article ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+    }
+    .article li {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      margin-bottom: 8px;
+      color: var(--text-light);
+    }
+    .article blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 16px 24px;
+      margin: 32px 0;
+      background: var(--bg-alt);
+      border-radius: 0 8px 8px 0;
+    }
+    .article blockquote p {
+      margin-bottom: 0;
+      font-style: italic;
+    }
+    .article code {
+      background: var(--bg-alt);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .article pre {
+      background: var(--bg-dark);
+      color: #e2e8f0;
+      padding: 24px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 24px 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .article pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+    .callout {
+      background: rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 32px 0;
+    }
+    .callout-title {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.95rem;
+    }
+    .comparison-table th {
+      background: var(--bg-alt);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+    }
+    .comparison-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-light);
+    }
+    .comparison-table tr:hover td {
+      background: var(--bg-alt);
+    }
+    .highlight-row td {
+      font-weight: 600;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <nav class="nav container">
+      <a href="../" class="nav-logo">neural<span>rust</span>.network</a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="../index.html#services">Services</a></li>
+        <li><a href="../index.html#expertise">Expertise</a></li>
+        <li><a href="../index.html#testimonials">Testimonials</a></li>
+        <li><a href="../blog.html">Blog</a></li>
+        <li><a href="../index.html#contact" class="btn btn-primary">Book a Call</a></li>
+      </ul>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Article -->
+  <article class="article">
+
+    <div class="article-meta">
+      <span class="article-tag">Case Study</span>
+      <span>February 2026</span>
+      <span>12 min read</span>
+    </div>
+
+    <h1>Building a Scalable ML Pipeline That Scores Hundreds of Sales Calls Daily</h1>
+
+    <p class="article-subtitle">
+      How we designed and shipped a production ML system on AWS for a sales intelligence client — and how we'd rebuild it today with LLMs on Modal and fine-tuned ColBERT for retrieval that actually understands sales conversations.
+    </p>
+
+    <h2>The Problem</h2>
+
+    <p>
+      A sales intelligence platform needed to score sales calls at scale. Their clients' sales teams were making hundreds of calls daily, and each call needed to be transcribed, analyzed for key moments (objection handling, discovery questions, closing techniques), and scored against a methodology framework. Doing this manually was impossible. Doing it with basic keyword matching was inaccurate.
+    </p>
+
+    <p>
+      The platform needed an ML pipeline that could:
+    </p>
+
+    <ul>
+      <li>Ingest call recordings as they happen, in real-time</li>
+      <li>Transcribe and process them reliably at scale</li>
+      <li>Score each call against multiple sales methodology dimensions</li>
+      <li>Surface results in a dashboard their managers could act on</li>
+      <li>Handle hundreds of calls per day without falling over</li>
+    </ul>
+
+    <h2>The Architecture We Built</h2>
+
+    <img src="images/pipeline_architecture.png" alt="Production ML Pipeline Architecture on AWS">
+    <figcaption>Production ML pipeline architecture — AWS-native, event-driven, built to scale.</figcaption>
+
+    <p>
+      We designed an event-driven, fully serverless architecture on AWS that decouples every stage of the pipeline. Here's how it works end-to-end:
+    </p>
+
+    <h3>1. Ingestion Layer</h3>
+
+    <p>
+      When a sales call is completed, the backend sends an API request to <strong>API Gateway</strong>, which triggers a <strong>Lambda function</strong>. This Lambda drops a message into <strong>SQS</strong> (Simple Queue Service) — our primary decoupling mechanism. Using SQS means we never lose a call even if downstream processing is temporarily overwhelmed. The queue absorbs spikes and feeds processing at a sustainable rate.
+    </p>
+
+    <h3>2. Transcript Processing</h3>
+
+    <p>
+      A second Lambda picks messages off the queue and stages raw transcripts in <strong>S3</strong>. This staging layer is important — it gives us a durable record of every input and makes reprocessing trivial if we update our models.
+    </p>
+
+    <p>
+      Another SQS queue feeds the transcripts to the ML compute layer. We deliberately used multiple queues rather than one monolithic queue, because different stages have different throughput characteristics and retry needs.
+    </p>
+
+    <h3>3. ML Compute</h3>
+
+    <p>
+      The heavy lifting happens on <strong>AWS Batch</strong> backed by EC2 compute instances. We chose Batch over Lambda for ML inference because:
+    </p>
+
+    <ul>
+      <li>ML models need GPU memory that Lambda can't provide</li>
+      <li>Batch lets us right-size instances for the model footprint</li>
+      <li>We can process multiple calls per instance, amortizing cold start</li>
+    </ul>
+
+    <p>
+      Custom tracking components monitor the state of every file through the pipeline. This was essential for reliability: we always know exactly where every call is in the process, and we can detect and retry failures automatically.
+    </p>
+
+    <h3>4. Output Routing</h3>
+
+    <p>
+      After scoring, the pipeline splits into two paths:
+    </p>
+
+    <ul>
+      <li><strong>Backend-compatible outputs</strong> go directly to the application database, surfacing in a scoring dashboard that sales managers use daily</li>
+      <li><strong>Non-standard outputs</strong> (edge cases, low-confidence scores) route through <strong>SNS</strong> for notification and into a <strong>human-in-the-loop staging bucket</strong> for manual review</li>
+    </ul>
+
+    <p>
+      The human-in-the-loop path was critical. No ML model is 100% accurate, and for a product where managers make coaching decisions based on scores, we needed a safety valve. Flagged calls get reviewed, and those corrections feed back into training data — making the model better over time.
+    </p>
+
+    <h3>5. Container Workloads</h3>
+
+    <p>
+      <strong>AWS Fargate</strong> handles longer-running containerized tasks — batch reprocessing, model evaluation runs, and periodic retraining jobs. Fargate gave us the flexibility of containers without managing EC2 instances for these less predictable workloads.
+    </p>
+
+    <h2>What Worked Well</h2>
+
+    <ul>
+      <li><strong>SQS as the backbone.</strong> The queue-based architecture meant we could scale each component independently. When call volume spiked 3x during quarter-end, the queues absorbed it gracefully.</li>
+      <li><strong>Human-in-the-loop from day one.</strong> Rather than waiting for the model to be "perfect," we shipped with a review path built in. This let us launch faster and improve continuously.</li>
+      <li><strong>S3 staging at every step.</strong> Having the raw data, intermediate outputs, and final scores all in S3 meant we could reprocess the entire history whenever we improved the model. Zero data loss.</li>
+      <li><strong>File tracking.</strong> Custom tracking components gave us end-to-end observability. When something failed — and things always fail — we could pinpoint exactly where and replay from that stage.</li>
+    </ul>
+
+    <h2>How We'd Rebuild It Today: LLMs + Fine-Tuned Retrieval</h2>
+
+    <p>
+      The architecture above was built in 2023-2024. It works. It's in production. But if we were starting today, two things would change dramatically: <strong>the scoring model</strong> and <strong>the retrieval layer</strong>.
+    </p>
+
+    <h3>Replacing Custom ML Scoring with LLMs on Modal</h3>
+
+    <p>
+      The original pipeline used custom-trained classification models to score calls against sales methodology dimensions. Training these models required significant labeled data, iteration cycles, and ongoing maintenance. Every time a new scoring dimension was needed, it meant collecting labels and retraining.
+    </p>
+
+    <p>
+      Today, we'd use an LLM — specifically <strong>Llama 3.1 8B</strong> — for the scoring task. Why?
+    </p>
+
+    <ul>
+      <li><strong>Zero-shot flexibility.</strong> Need to score for a new methodology? Write a prompt. No retraining, no labels, no two-week iteration cycle.</li>
+      <li><strong>Nuanced understanding.</strong> LLMs understand context, tone, and conversational dynamics that classification models miss. "That's an interesting point" after a price objection means something very different than after a feature question.</li>
+      <li><strong>Structured output.</strong> With proper prompting, the LLM returns scores, reasoning, and specific quotes from the transcript — all in a structured format the dashboard can consume directly.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Why Modal for LLM Hosting?</div>
+      <p>
+        We host our LLMs on <strong>Modal</strong> rather than AWS Bedrock or self-managed GPU instances. Here's the math: a dedicated <code>g5.xlarge</code> on AWS costs ~$730/month whether you're using it or not. Modal charges per second of actual GPU compute. For a pipeline that processes calls in batches (not 24/7 real-time), this means we pay for ~3-4 hours of GPU time per day instead of 24. That's roughly <strong>$150-200/month vs $730</strong>. Modal also handles scaling to zero, cold starts in seconds, and version deployments with a single command. For batch workloads with variable volume, it's a no-brainer.
+      </p>
+    </div>
+
+    <p>
+      The integration is clean. The SQS + Lambda architecture stays the same — instead of calling AWS Batch for ML inference, the Lambda calls a Modal endpoint. The LLM processes the transcript, returns structured scores, and everything downstream is unchanged. Same S3 staging, same dashboard, same human-in-the-loop path.
+    </p>
+
+    <h3>Replacing OpenAI Embeddings with Fine-Tuned ColBERT</h3>
+
+    <p>
+      The retrieval layer is where things get interesting. When scoring a call, the model needs to find relevant moments — the exact section where the rep handled an objection, or where they asked a discovery question. In the original system, we used basic text search and heuristics. In a modern RAG setup, most people reach for OpenAI's embedding API.
+    </p>
+
+    <p>
+      We use neither. We use <strong>fine-tuned ColBERTv2</strong>, a late interaction retrieval model. Here's why it matters:
+    </p>
+
+    <h3>The Problem with Standard Embeddings</h3>
+
+    <p>
+      Dense embedding models (OpenAI <code>text-embedding-3-small</code>, BGE, MiniLM) compress an entire passage into a single vector. This works well for general semantic search, but it crushes nuance. In sales conversations, the difference between a good discovery question and a mediocre one might be a single word or phrase. A single-vector embedding averages that signal away.
+    </p>
+
+    <h3>How ColBERT Is Different</h3>
+
+    <p>
+      ColBERT generates a vector <strong>per token</strong>, not per passage. When you search, it does a fine-grained token-level matching between the query and every document. Think of it as the model checking "does this specific word in my query match this specific word in the document?" across all combinations, then summing the best matches.
+    </p>
+
+    <p>
+      For sales call analysis, this means:
+    </p>
+
+    <ul>
+      <li><strong>"What budget have you allocated?"</strong> (strong discovery question) vs <strong>"Do you have a budget?"</strong> (weak yes/no question) — ColBERT distinguishes these. Standard embeddings often don't.</li>
+      <li><strong>"I understand your concern about price"</strong> (acknowledgment) vs <strong>"The price is the price"</strong> (dismissal) — the token-level matching catches the semantic difference in handling style.</li>
+      <li>When searching for "objection handling," ColBERT finds the actual moments of pushback and response, not just paragraphs that happen to contain the word "objection."</li>
+    </ul>
+
+    <h3>Fine-Tuning Makes It Domain-Specific</h3>
+
+    <p>
+      Out-of-the-box ColBERTv2 is trained on general web data. Fine-tuning it on sales conversation pairs — "this query should match this transcript segment" — makes it dramatically better at finding the right moments in calls. We create training pairs from the human-reviewed calls (the human-in-the-loop data that was already being collected), so the model improves continuously with zero additional labeling effort.
+    </p>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Retrieval Method</th>
+          <th>Approach</th>
+          <th>Strength</th>
+          <th>Weakness</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>BM25 (keyword)</td>
+          <td>Term frequency matching</td>
+          <td>Fast, no ML needed</td>
+          <td>Misses semantic meaning entirely</td>
+        </tr>
+        <tr>
+          <td>OpenAI Embeddings</td>
+          <td>Single vector per passage</td>
+          <td>Good general semantic search</td>
+          <td>Compresses away token-level nuance, API dependency, per-call cost</td>
+        </tr>
+        <tr>
+          <td>BGE / MiniLM</td>
+          <td>Single vector, self-hosted</td>
+          <td>No API cost, decent quality</td>
+          <td>Same compression problem as OpenAI</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Fine-Tuned ColBERTv2</td>
+          <td>Multi-vector, token-level matching</td>
+          <td>Precise retrieval, domain-adapted, self-hosted, no API cost</td>
+          <td>Higher storage, slightly more compute</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      The storage trade-off is real — ColBERT stores 128-dimensional vectors per token instead of one vector per chunk. But for a corpus of sales call transcripts (not billions of web pages), the storage cost is negligible. We're talking gigabytes, not terabytes.
+    </p>
+
+    <h2>The Modern Stack</h2>
+
+    <p>
+      If we were rebuilding this pipeline today, the architecture diagram would look simpler, not more complex:
+    </p>
+
+    <ul>
+      <li><strong>Ingestion:</strong> Same API Gateway + SQS pattern. It's battle-tested, don't fix what works.</li>
+      <li><strong>Transcript storage:</strong> Same S3 staging. Durability matters.</li>
+      <li><strong>Retrieval:</strong> Fine-tuned ColBERTv2 indexes the transcript, retrieves the most relevant moments for each scoring dimension.</li>
+      <li><strong>Scoring:</strong> Llama 3.1 8B on Modal — receives the retrieved moments + scoring rubric, returns structured scores with reasoning.</li>
+      <li><strong>Output:</strong> Same split — scores go to dashboard, low-confidence to human review.</li>
+      <li><strong>Continuous improvement:</strong> Human-reviewed corrections fine-tune both the ColBERT retriever and the LLM prompts.</li>
+    </ul>
+
+    <p>
+      The biggest win? <strong>Time to add a new scoring dimension drops from weeks to hours.</strong> Write a prompt describing the new dimension, test it against a few calls, deploy. No labeling, no retraining, no waiting.
+    </p>
+
+    <h2>Lessons for Your Pipeline</h2>
+
+    <p>
+      Whether you're scoring sales calls, reviewing legal contracts, or analyzing field reports, the principles are the same:
+    </p>
+
+    <ol>
+      <li><strong>Decouple with queues.</strong> SQS (or any message queue) between every stage. Your pipeline will fail — make sure failures are isolated and retryable.</li>
+      <li><strong>Stage everything in durable storage.</strong> You will want to reprocess. Make it easy.</li>
+      <li><strong>Build human-in-the-loop from day one.</strong> It's a quality safety net today and a training data source tomorrow.</li>
+      <li><strong>Use the right retrieval for your domain.</strong> If precision matters — and in any professional context, it does — fine-tuned ColBERT outperforms general-purpose embeddings. The extra engineering effort pays for itself in result quality.</li>
+      <li><strong>Host LLMs where the economics make sense.</strong> Dedicated GPU instances for variable workloads is burning money. Pay-per-second platforms like Modal align cost with actual usage.</li>
+      <li><strong>Keep your data private.</strong> Self-hosted models + self-hosted retrieval means client data never leaves your infrastructure. For regulated industries, this isn't optional.</li>
+    </ol>
+
+    <div class="callout">
+      <div class="callout-title">Want to Build Something Similar?</div>
+      <p>
+        We build and deploy private AI systems for businesses that need their data to stay private. Whether it's sales intelligence, legal document analysis, or operational analytics — we handle the AI so you can focus on your business. <a href="../index.html#contact">Book a free session</a> to discuss your use case.
+      </p>
+    </div>
+
+  </article>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">neural<span>rust</span>.network</div>
+          <p>AI/ML consulting and managed services based in Ottawa, ON. Helping businesses leverage artificial intelligence to grow smarter.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="../index.html#services">Services</a></li>
+            <li><a href="../index.html#expertise">Expertise</a></li>
+            <li><a href="../blog.html">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul class="footer-links">
+            <li><a href="mailto:bis@neuralrust.network">bis@neuralrust.network</a></li>
+            <li>Ottawa, ON, Canada</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Neuralrust.Network. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('navToggle').addEventListener('click', function () {
+      document.getElementById('navLinks').classList.toggle('active');
+    });
+    document.querySelectorAll('.nav-links a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        document.getElementById('navLinks').classList.remove('active');
+      });
+    });
+    window.addEventListener('scroll', function () {
+      var header = document.getElementById('header');
+      if (window.scrollY > 10) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+  </script>
+
+</body>
+</html>
